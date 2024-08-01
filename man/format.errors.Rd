@@ -5,7 +5,8 @@
 \title{Encode \code{errors}}
 \usage{
 \method{format}{errors}(x, digits = NULL, scientific = FALSE,
-  notation = getOption("errors.notation", "parenthesis"), ...)
+  notation = getOption("errors.notation", "parenthesis"),
+  decimals = getOption("errors.decimals", FALSE), ...)
 }
 \arguments{
 \item{x}{an \code{errors} object.}
@@ -24,6 +25,11 @@ When using the "parenthesis" error notation, by default the uncertainty
 is formatted without any decimal point, unless the option
 \code{"errors.parenthesis.unc.dec.point"} is set to TRUE.}
 
+\item{decimals}{logical specifying whether the uncertainty should be formatted
+with a decimal point even when the \code{"parenthesis"} notation is used.
+Otherwise (by default), the \code{"parenthesis"} notation scales the
+uncertainty to match the least significant digit of the value.}
+
 \item{...}{ignored.}
 }
 \description{
@@ -33,6 +39,7 @@ Format an \code{errors} object for pretty printing.
 x <- set_errors(1:3*100, 1:3*100 * 0.05)
 format(x)
 format(x, digits=2)
+format(x, digits=2, decimals=TRUE)
 format(x, scientific=TRUE)
 format(x, notation="plus-minus")
 
