@@ -20,10 +20,7 @@ value according to the Particle Data Group rounding rule (see references).}
 encoded in scientific format.}
 
 \item{notation}{error notation; \code{"parenthesis"} and \code{"plus-minus"}
-are supported through the \code{"errors.notation"} option.
-When using the "parenthesis" error notation, by default the uncertainty
-is formatted without any decimal point, unless the option
-\code{"errors.parenthesis.unc.dec.point"} is set to TRUE.}
+are supported through the \code{"errors.notation"} option.}
 
 \item{decimals}{logical specifying whether the uncertainty should be formatted
 with a decimal point even when the \code{"parenthesis"} notation is used.
