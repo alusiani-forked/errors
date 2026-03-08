@@ -1,7 +1,18 @@
 # errors devel
 
+- Fix `print()` method, which now correctly returns the object invisibly (#64).
+
+# errors 0.4.4
+
+- Improve `cbind` arg name deparsing.
+- Switch from `geom_errobarh()` (deprecated) to `geom_errorbar()` with flipped
+  aesthetics in `geom_errors()` (#63).
+
+# errors 0.4.3
+
 - Add option `decimals` to `format()` method to add support for uncertainty with
   decimals in the `parenthesis` notation (@alusiani #60, #61 addressing #47).
+- Fix internal `propagate` function (for r-quantities/units#371).
 
 # errors 0.4.2
 
