@@ -7,6 +7,8 @@
 #' The default, \code{NULL}, uses \code{getOption("errors.digits", 1)}.
 #' Use \code{digits="pdg"} to choose an appropriate number of digits for each
 #' value according to the Particle Data Group rounding rule (see references).
+#' @param extra non-negative integer; extra digits to display beyond the PDG
+#' minimum when \code{digits="pdg"}. Default \code{0}. Presently ignored.
 #' @param scientific logical specifying whether the elements should be
 #' encoded in scientific format.
 #' @param notation error notation; \code{"parenthesis"} and \code{"plus-minus"}
@@ -37,24 +39,49 @@ format.errors = function(x,
                          scientific = FALSE,
                          notation = getOption("errors.notation", "parenthesis"),
                          decimals = getOption("errors.decimals", FALSE),
+                         extra = 0L,
                          ...)
 {
   stopifnot(notation %in% c("parenthesis", "plus-minus"))
 
   if (is.null(digits)) digits <- getOption("errors.digits", 1)
-  digits <- if (digits == "pdg") digits_pdg(.e(x)) else rep(digits, length(x))
+  pdg <- identical(digits, "pdg")
+  digits <- if (pdg) digits_pdg(.e(x), extra = extra) else rep(digits, length(x))
 
   scipen <- getOption("scipen", 0)
   prepend <- rep("", length(x))
   append <- rep("", length(x))
 
-  e <- signif(.e(x), digits)
+  # For PDG 950-999: the three leading digits round up to 1000, promoting the
+  # uncertainty by one power of ten. signif() rounds to nearest and gives the
+  # wrong result (e.g. signif(0.0951, 2) = 0.095, not 0.10). Detect these
+  # cases and replace with an exact ceiling to the next power of ten.
+  raw_e <- .e(x)
+  if (pdg) {
+    eraw     <- get_exponent(raw_e)
+    hod      <- round(raw_e / 10^(eraw - 2))    # three leading digits
+    promoted <- is.finite(raw_e) & raw_e > 0 & hod >= 950L
+    e        <- ifelse(promoted, 10^(eraw + 1L), signif(raw_e, digits))
+  } else {
+    e <- signif(raw_e, digits)
+  }
   nulle <- e == 0 & !is.na(e)
   eexp <- get_exponent(e)
   xexp <- ifelse(.v(x) == 0, eexp + 1, get_exponent(x))
   value_digits <- ifelse(e, digits - eexp, digits)
   value <- ifelse(e, signif(.v(x), xexp + value_digits), .v(x))
   value <- ifelse(is.finite(value), value, .v(x))
+  # For promoted elements with eexp >= 0 (uncertainty rounds to >= 1), the
+  # formula value_digits-1 gives one too many decimal places (e.g. 0.827±0.962
+  # -> e=1, value_digits=2, formatC would give "0.8" or "1.0" not "1").
+  # Round value to 0 decimal places and set value_digits=1 for these cases.
+  if (pdg && any(promoted)) {
+    fix <- promoted & eexp >= 0L
+    if (any(fix)) {
+      value[fix]        <- round(value[fix], 0L)
+      value_digits[fix] <- 1L
+    }
+  }
 
   cond <- (scientific | (xexp > 4+scipen | xexp < -3-scipen)) & is.finite(e)
   e[cond] <- e[cond] * 10^(-xexp[cond])
@@ -84,6 +111,12 @@ format.errors = function(x,
   value[nulle] <- prettyNum(value[nulle], drop0trailing=TRUE)
 
   e <- sapply(seq_along(digits), function(i) {
+    # Promoted PDG uncertainties with eexp >= 0 are exact powers of ten (1, 10,
+    # 100, ...). Format them as integers to avoid spurious ".0" from "%#.2g".
+    # This is distinct from a genuine 1.0 input which is not PDG-promoted.
+    if (pdg && promoted[i] && eexp[i] >= 0L)
+      return(formatC(round(e[[i]]), format="d",
+                     decimal.mark=getOption("OutDec")))
     formatC(e[[i]], format="fg", flag="#",
             digits=digits[[i]], width=max(1, digits[[i]]),
             decimal.mark=getOption("OutDec"))

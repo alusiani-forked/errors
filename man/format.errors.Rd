@@ -6,7 +6,7 @@
 \usage{
 \method{format}{errors}(x, digits = NULL, scientific = FALSE,
   notation = getOption("errors.notation", "parenthesis"),
-  decimals = getOption("errors.decimals", FALSE), ...)
+  decimals = getOption("errors.decimals", FALSE), extra = 0L, ...)
 }
 \arguments{
 \item{x}{an \code{errors} object.}
@@ -26,6 +26,9 @@ are supported through the \code{"errors.notation"} option.}
 with a decimal point even when the \code{"parenthesis"} notation is used.
 Otherwise (by default), the \code{"parenthesis"} notation scales the
 uncertainty to match the least significant digit of the value.}
+
+\item{extra}{non-negative integer; extra digits to display beyond the PDG
+minimum when \code{digits="pdg"}. Default \code{0}. Presently ignored.}
 
 \item{...}{ignored.}
 }

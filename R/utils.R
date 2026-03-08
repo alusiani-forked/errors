@@ -26,13 +26,24 @@ warn_once_coercion <- function(fun) warn_once(
 
 get_exponent <- function(x) ifelse(.v(x), floor(log10(abs(.v(x)))), 0)
 
-digits_pdg <- function(x) {
-  # extract 3 highest order digits
-  x <- ifelse(is.finite(x), x, 0)
-  x_sci <- formatC(abs(x), digits=2, format="e", decimal.mark=".")
-  x_hod <- as.integer(gsub("(\\.|e.*)", "", x_sci))
+#
+# digits for digits="pdg" formatting
+# extra parameter not presently used but
+# available for further extension
+#
+digits_pdg <- function(err, extra = 0L) {
+  pow      <- floor(log10(abs(err)))
+  # hod is the three leading digits of err, an integer in [100, 1000).
+  # round() is the correct operation: hod is definitionally the nearest
+  # integer, and signif/round never need floor or ceil for PDG boundaries.
+  hod <- round(err / 10^(pow - 2))
 
-  ifelse(x_hod < 355, 2, ifelse(x_hod < 950, 1, 0))
+  ## 000-354 - 2 digits
+  ## 355-949 - 1 digit
+  ## 950-999 - rounded to 1000 and 2 digits
+  ifelse(hod < 355, 2L + extra,
+    ifelse(hod < 950, 1L + extra,
+      2L + extra))
 }
 
 propagate <- function(xx, x, y, dx, dy, method=getOption("errors.propagation", "taylor-first-order")) {
