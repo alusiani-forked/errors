@@ -72,13 +72,13 @@ format.errors = function(x,
   value <- ifelse(e, signif(.v(x), xexp + value_digits), .v(x))
   value <- ifelse(is.finite(value), value, .v(x))
   # For promoted elements with eexp >= 0 (uncertainty rounds to >= 1), the
-  # formula value_digits-1 gives one too many decimal places (e.g. 0.827±0.962
-  # -> e=1, value_digits=2, formatC would give "0.8" or "1.0" not "1").
+  # formula value_digits-1 gives one too many decimal places for the value
+  # (e.g. 0.827±0.962 -> e=1, value_digits=2, formatC would give "1.0" not "1").
   # Round value to 0 decimal places and set value_digits=1 for these cases.
   if (pdg && any(promoted)) {
     fix <- promoted & eexp >= 0L
     if (any(fix)) {
-      value[fix]        <- round(value[fix], 0L)
+      value[fix]        <- round(value[fix], -eexp[fix])
       value_digits[fix] <- 1L
     }
   }

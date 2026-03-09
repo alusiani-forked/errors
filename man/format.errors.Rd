@@ -28,7 +28,7 @@ Otherwise (by default), the \code{"parenthesis"} notation scales the
 uncertainty to match the least significant digit of the value.}
 
 \item{extra}{non-negative integer; extra digits to display beyond the PDG
-minimum when \code{digits="pdg"}. Default \code{0}. Presently ignored.}
+minimum when \code{digits="pdg"}. Default \code{0}. Ignored otherwise.}
 
 \item{...}{ignored.}
 }
